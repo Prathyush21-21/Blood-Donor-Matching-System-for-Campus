@@ -18,12 +18,12 @@ const Views = {
                        <button class="btn btn-secondary" onclick="app.navigate('dashboard')">
                            <i data-lucide="layout-dashboard"></i> Dashboard
                        </button>`
-                    : `<button class="btn btn-primary" onclick="app.navigate('auth')">
+                    : `<a href="login.html" class="btn btn-primary" style="text-decoration: none;">
                            <i data-lucide="user-plus"></i> Join as Donor
-                       </button>
-                       <button class="btn btn-secondary" onclick="app.navigate('auth')">
+                       </a>
+                       <a href="login.html" class="btn btn-secondary" style="text-decoration: none;">
                            <i data-lucide="log-in"></i> Login
-                       </button>`
+                       </a>`
                 }
             </div>
 
@@ -47,60 +47,12 @@ const Views = {
         </div>
     `,
 
-    auth: () => `
-        <div class="view stagger-1" style="max-width: 450px; margin: 2rem auto; width: 100%;">
-            <div class="card glass">
-                <div class="auth-tabs flex justify-between mb-3" style="border-bottom: 1px solid var(--border-color);">
-                    <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; border-bottom: 2px solid var(--primary);" onclick="app.toggleAuthMode('login')" id="tab-login">Login</button>
-                    <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; color: var(--text-secondary);" onclick="app.toggleAuthMode('register')" id="tab-register">Register</button>
-                </div>
-                
-                <form id="auth-form" onsubmit="app.handleAuth(event)">
-                    <div id="register-fields" style="display: none;">
-                        <div class="form-group slide-up">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" id="auth-name" class="form-input" placeholder="Rahul Sharma">
-                        </div>
-                        <div class="form-group slide-up">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" id="auth-phone" class="form-input" placeholder="+91 98765 43210">
-                        </div>
-                        <div class="form-group slide-up">
-                            <label class="form-label">Campus Location / Dorm</label>
-                            <input type="text" id="auth-location" class="form-input" placeholder="Kaveri Hostel, Block A">
-                        </div>
-                        <div class="form-group slide-up">
-                            <label class="form-label">Blood Group</label>
-                            <input type="hidden" id="auth-blood-group" value="">
-                            <div class="blood-group-selector">
-                                ${['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => 
-                                    `<div class="blood-group-option" onclick="app.selectBloodGroup('${bg}')" id="bg-${bg.replace('+','plus').replace('-','minus')}">${bg}</div>`
-                                ).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group stagger-2">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" id="auth-email" class="form-input" placeholder="student@iitd.ac.in" required>
-                    </div>
-                    <div class="form-group stagger-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary w-full mt-2 stagger-4" id="auth-submit-btn">
-                        Login to Account
-                    </button>
-                </form>
-            </div>
-        </div>
-    `,
+
 
     dashboard: async () => {
         const user = Store.getCurrentUser();
         if (!user) {
-            setTimeout(() => app.navigate('auth'), 0);
+            window.location.href = 'login.html';
             return '';
         }
 
@@ -208,7 +160,7 @@ const Views = {
     request: () => {
         const user = Store.getCurrentUser();
         if (!user) {
-            setTimeout(() => app.navigate('auth'), 0);
+            window.location.href = 'login.html';
             return '';
         }
         return `
@@ -348,6 +300,7 @@ const app = {
             root.innerHTML = await Views[route](...args);
             if (typeof lucide !== 'undefined') lucide.createIcons(); // re-initialize icons in new html
             this.updateNav();
+            window.scrollTo(0, 0);
         }
     },
 
@@ -363,93 +316,19 @@ const app = {
                 <span class="nav-link" style="color: var(--text-primary); cursor: default;">
                     <i data-lucide="user" style="width: 18px; margin-right: 5px; vertical-align:-3px; color: var(--primary);"></i>${(user.name || 'User').split(' ')[0]}
                 </span>
-                <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; margin-left: 10px;" onclick="Store.logout(); app.toast('Logged out successfully', 'info'); app.navigate('home')">
+                <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; margin-left: 10px;" onclick="Store.logout(); app.toast('Logged out successfully', 'info'); window.location.href = 'login.html';">
                     Log out
                 </button>
             `;
         } else {
             nav.innerHTML = `
                 <a class="nav-link ${this.currentRoute === 'home' ? 'active' : ''}" onclick="app.navigate('home', event)">Home</a>
-                <button class="btn btn-primary" style="padding: 0.5rem 1rem;" onclick="app.navigate('auth')">Login / Join</button>
+                <a href="login.html" class="btn btn-primary" style="padding: 0.5rem 1rem; text-decoration: none;">Login / Join</a>
             `;
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     },
 
-    // Auth Logic
-    toggleAuthMode(mode) {
-        this.authMode = mode;
-        const regFields = document.getElementById('register-fields');
-        const submitBtn = document.getElementById('auth-submit-btn');
-        const tabLogin = document.getElementById('tab-login');
-        const tabRegister = document.getElementById('tab-register');
-
-        if (mode === 'register') {
-            regFields.style.display = 'block';
-            submitBtn.textContent = 'Create Account';
-            
-            tabRegister.style.borderBottom = '2px solid var(--primary)';
-            tabRegister.style.color = 'var(--text-primary)';
-            
-            tabLogin.style.borderBottom = 'none';
-            tabLogin.style.color = 'var(--text-secondary)';
-        } else {
-            regFields.style.display = 'none';
-            submitBtn.textContent = 'Login to Account';
-            
-            tabLogin.style.borderBottom = '2px solid var(--primary)';
-            tabLogin.style.color = 'var(--text-primary)';
-            
-            tabRegister.style.borderBottom = 'none';
-            tabRegister.style.color = 'var(--text-secondary)';
-        }
-    },
-
-    selectBloodGroup(bg) {
-        // Deselect all
-        document.querySelectorAll('.blood-group-option').forEach(el => el.classList.remove('selected'));
-        // Select one
-        const elId = 'bg-' + bg.replace('+', 'plus').replace('-', 'minus');
-        document.getElementById(elId).classList.add('selected');
-        document.getElementById('auth-blood-group').value = bg;
-    },
-
-    async handleAuth(e) {
-        e.preventDefault();
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
-
-        if (this.authMode === 'login') {
-            if (await Store.login(email, password)) {
-                this.toast('Login successful!', 'success');
-                this.navigate('dashboard');
-            } else {
-                this.toast('Invalid email or password.', 'error');
-            }
-        } else {
-            const name = document.getElementById('auth-name').value;
-            const phone = document.getElementById('auth-phone').value;
-            const location = document.getElementById('auth-location').value;
-            const bloodGroup = document.getElementById('auth-blood-group').value;
-
-            if (!name || !phone || !location || !bloodGroup) {
-                this.toast('Please fill all fields, including blood group.', 'error');
-                return;
-            }
-
-            if (await Store.getUserByEmail(email)) {
-                this.toast('Email already in use.', 'error');
-                return;
-            }
-
-            const newUser = { name, phone, email, password, location, bloodGroup, canDonate: true };
-            await Store.saveUser(newUser);
-            await Store.login(email, password); // Auto login
-            
-            this.toast('Account created successfully!', 'success');
-            this.navigate('dashboard');
-        }
-    },
 
     async submitRequest(e) {
         e.preventDefault();

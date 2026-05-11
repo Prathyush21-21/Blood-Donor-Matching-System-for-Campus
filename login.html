@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Blood Match - Login</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/animations.css">
+    <link rel="stylesheet" href="./css/login.css">
+</head>
+<body class="dark-theme">
+    <div id="toast-container" class="toast-container"></div>
+    
+    <nav class="navbar glass">
+        <div class="nav-content container">
+            <a href="index.html" class="brand">
+                <i data-lucide="droplet" class="brand-icon"></i>
+                <span class="brand-text">BloodMatch<span class="dot">.</span></span>
+            </a>
+        </div>
+    </nav>
+
+    <main id="login-app" class="app-root main-transition" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 70px);">
+        <div class="view stagger-1" style="max-width: 450px; width: 100%; padding: 1rem;">
+            <div class="card glass">
+                <div class="auth-tabs flex justify-between mb-3" style="border-bottom: 1px solid var(--border-color);">
+                    <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; border-bottom: 2px solid var(--primary);" onclick="loginApp.toggleAuthMode('login')" id="tab-login">Login</button>
+                    <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; color: var(--text-secondary);" onclick="loginApp.toggleAuthMode('register')" id="tab-register">Register</button>
+                </div>
+                
+                <form id="auth-form" onsubmit="loginApp.handleAuth(event)">
+                    <div id="register-fields" style="display: none;">
+                        <div class="form-group slide-up">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" id="auth-name" class="form-input" placeholder="Rahul Sharma">
+                        </div>
+                        <div class="form-group slide-up">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" id="auth-phone" class="form-input" placeholder="+91 98765 43210">
+                        </div>
+                        <div class="form-group slide-up">
+                            <label class="form-label">Campus Location / Dorm</label>
+                            <input type="text" id="auth-location" class="form-input" placeholder="Kaveri Hostel, Block A">
+                        </div>
+                        <div class="form-group slide-up">
+                            <label class="form-label">Blood Group</label>
+                            <input type="hidden" id="auth-blood-group" value="">
+                            <div class="blood-group-selector">
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('A+')" id="bg-Aplus">A+</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('A-')" id="bg-Aminus">A-</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('B+')" id="bg-Bplus">B+</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('B-')" id="bg-Bminus">B-</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('AB+')" id="bg-ABplus">AB+</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('AB-')" id="bg-ABminus">AB-</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('O+')" id="bg-Oplus">O+</div>
+                                <div class="blood-group-option" onclick="loginApp.selectBloodGroup('O-')" id="bg-Ominus">O-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group stagger-2">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="auth-email" class="form-input" placeholder="student@iitd.ac.in" required>
+                    </div>
+                    <div class="form-group stagger-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full mt-2 stagger-4" id="auth-submit-btn">
+                        Login to Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="./js/store.js"></script>
+    <script src="./js/login.js"></script>
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    </script>
+</body>
+</html>
