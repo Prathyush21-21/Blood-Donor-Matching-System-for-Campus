@@ -1,46 +1,10 @@
-// Local Storage Mock Database
+let API_URL = window.location.origin;
+if (window.location.port === '5500' || window.location.port === '8080') {
+    API_URL = 'http://' + window.location.hostname + ':3000';
+}
+
 const Store = {
-    init() {
-        if (!localStorage.getItem('users')) {
-            localStorage.setItem('users', JSON.stringify([]));
-        }
-        if (!localStorage.getItem('requests')) {
-            localStorage.setItem('requests', JSON.stringify([]));
-        }
-    },
-
-    // Users
-    getUsers() {
-        try {
-            return JSON.parse(localStorage.getItem('users')) || [];
-        } catch { return []; }
-    },
-
-    getUserByEmail(email) {
-        return this.getUsers().find(u => u.email === email);
-    },
-
-    saveUser(user) {
-        const users = this.getUsers();
-        users.push({ ...user, id: Date.now().toString(), createdAt: new Date().toISOString() });
-        localStorage.setItem('users', JSON.stringify(users));
-        return true;
-    },
-
-    // Current Auth User
-    login(email, password) {
-        const user = this.getUserByEmail(email);
-        if (user && user.password === password) {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            return true;
-        }
-        return false;
-    },
-
-    logout() {
-        localStorage.removeItem('currentUser');
-    },
-
+    // Current Auth User (Local Session)
     getCurrentUser() {
         const user = localStorage.getItem('currentUser');
         if (!user || user === 'undefined') return null;
@@ -48,50 +12,112 @@ const Store = {
             return JSON.parse(user);
         } catch { return null; }
     },
+    
+    setCurrentUser(user) {
+        if (user) localStorage.setItem('currentUser', JSON.stringify(user));
+        else localStorage.removeItem('currentUser');
+    },
+
+    logout() {
+        this.setCurrentUser(null);
+    },
+
+    // Users
+    async getUsers() {
+        try {
+            const res = await fetch(`${API_URL}/users`);
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return []; }
+    },
+
+    async getUserByEmail(email) {
+        try {
+            const res = await fetch(`${API_URL}/users?email=${encodeURIComponent(email)}`);
+            const users = await res.json();
+            return users[0] || null;
+        } catch (e) { console.error("DB Error", e); return null; }
+    },
+
+    async saveUser(user) {
+        try {
+            const res = await fetch(`${API_URL}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...user, id: Date.now().toString(), createdAt: new Date().toISOString() })
+            });
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return null; }
+    },
+
+    // Auth
+    async login(email, password) {
+        const user = await this.getUserByEmail(email);
+        if (user && user.password === password) {
+            this.setCurrentUser(user);
+            return true;
+        }
+        return false;
+    },
 
     // Requests
-    getRequests() {
+    async getRequestById(reqId) {
         try {
-            return JSON.parse(localStorage.getItem('requests')) || [];
-        } catch { return []; }
+            const res = await fetch(`${API_URL}/requests/${reqId}`);
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return null; }
     },
 
-    createRequest(request) {
-        const requests = this.getRequests();
-        const newReq = {
-            ...request,
-            id: Date.now().toString(),
-            createdAt: new Date().toISOString(),
-            status: 'active', // active, fulfilled
-            responses: []
-        };
-        requests.unshift(newReq);
-        localStorage.setItem('requests', JSON.stringify(requests));
-        return newReq;
+    async getRequests() {
+        try {
+            const res = await fetch(`${API_URL}/requests?_sort=createdAt&_order=desc`);
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return []; }
     },
 
-    getMyRequests(userId) {
-        return this.getRequests().filter(r => r.requesterId === userId);
+    async createRequest(request) {
+        try {
+            const res = await fetch(`${API_URL}/requests`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...request, id: Date.now().toString(), createdAt: new Date().toISOString(), status: 'active', responses: [] })
+            });
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return null; }
     },
 
-    // Donors (Search functionality)
-    searchDonors(bloodGroup, location) {
-        const users = this.getUsers();
-        const currentUser = this.getCurrentUser();
-        
-        return users.filter(u => {
-            if (currentUser && u.id === currentUser.id) return false;
-            let match = true;
-            if (bloodGroup && bloodGroup !== 'Any') {
-                match = match && u.bloodGroup === bloodGroup;
-            }
-            if (location) {
-                match = match && u.location.toLowerCase().includes(location.toLowerCase());
-            }
-            return match && u.canDonate; // Assuming user has a canDonate flag
-        });
+    async getMyRequests(userId) {
+        try {
+            const res = await fetch(`${API_URL}/requests?requesterId=${userId}&_sort=createdAt&_order=desc`);
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return []; }
+    },
+
+    async addResponseToRequest(reqId, responseData) {
+        try {
+            const request = await this.getRequestById(reqId);
+            if (!request) return null;
+            
+            const responses = request.responses || [];
+            responses.push(responseData);
+
+            const res = await fetch(`${API_URL}/requests/${reqId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ responses })
+            });
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return null; }
+    },
+
+    async resolveRequest(reqId) {
+        try {
+            const res = await fetch(`${API_URL}/requests/${reqId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'fulfilled' })
+            });
+            return await res.json();
+        } catch (e) { console.error("DB Error", e); return null; }
     }
 };
-
-// Initialize store on script load
-Store.init();

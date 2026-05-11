@@ -59,15 +59,15 @@ const Views = {
                     <div id="register-fields" style="display: none;">
                         <div class="form-group slide-up">
                             <label class="form-label">Full Name</label>
-                            <input type="text" id="auth-name" class="form-input" placeholder="John Doe">
+                            <input type="text" id="auth-name" class="form-input" placeholder="Rahul Sharma">
                         </div>
                         <div class="form-group slide-up">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" id="auth-phone" class="form-input" placeholder="+1 234 567 8900">
+                            <input type="tel" id="auth-phone" class="form-input" placeholder="+91 98765 43210">
                         </div>
                         <div class="form-group slide-up">
                             <label class="form-label">Campus Location / Dorm</label>
-                            <input type="text" id="auth-location" class="form-input" placeholder="North Campus, Block A">
+                            <input type="text" id="auth-location" class="form-input" placeholder="Kaveri Hostel, Block A">
                         </div>
                         <div class="form-group slide-up">
                             <label class="form-label">Blood Group</label>
@@ -82,7 +82,7 @@ const Views = {
                     
                     <div class="form-group stagger-2">
                         <label class="form-label">Email Address</label>
-                        <input type="email" id="auth-email" class="form-input" placeholder="student@university.edu" required>
+                        <input type="email" id="auth-email" class="form-input" placeholder="student@iitd.ac.in" required>
                     </div>
                     <div class="form-group stagger-3">
                         <label class="form-label">Password</label>
@@ -97,27 +97,27 @@ const Views = {
         </div>
     `,
 
-    dashboard: () => {
+    dashboard: async () => {
         const user = Store.getCurrentUser();
         if (!user) {
             setTimeout(() => app.navigate('auth'), 0);
             return '';
         }
 
-        const requests = Store.getRequests();
+        const requests = await Store.getRequests();
         // Matching rules: if you are O-, anyone. If you are O+, O+ or positive. (Simplified logic for matching demo: precise match)
         const activeRequests = requests.filter(r => r.status === 'active' && r.requesterId !== user.id);
-        const myRequests = Store.getMyRequests(user.id);
+        const myRequests = await Store.getMyRequests(user.id);
 
         return `
             <div class="view stagger-1" style="max-width: 900px; margin: 2rem auto; width: 100%;">
                 
                 <div class="card glass mb-3 flex justify-between align-center">
                     <div>
-                        <h2 style="font-size: 1.8rem;">Welcome, ${user.name}</h2>
+                        <h2 style="font-size: 1.8rem;">Welcome, ${user.name || 'User'}</h2>
                         <p class="mt-1 flex align-center gap-2">
-                            <span class="badge badge-danger" style="font-size: 1rem;">${user.bloodGroup}</span>
-                            <span>${user.location}</span>
+                            <span class="badge badge-danger" style="font-size: 1rem;">${user.bloodGroup || 'N/A'}</span>
+                            <span>${user.location || 'Unknown'}</span>
                         </p>
                     </div>
                     <div class="text-center">
@@ -145,7 +145,7 @@ const Views = {
                                     <p class="mt-1 text-sm text-muted">Requested by: ${req.requesterName} • ${new Date(req.createdAt).toLocaleDateString()}</p>
                                     
                                     ${user.bloodGroup === req.bloodGroup || user.bloodGroup === 'O-' ? `
-                                        <button class="btn btn-primary w-full mt-2" onclick="app.toast('Donor intent sent to requester!', 'success')">
+                                        <button class="btn btn-primary w-full mt-2" onclick="app.navigate('donate_form', event, '${req.id}')">
                                             I can donate
                                         </button>
                                     ` : `
@@ -174,7 +174,28 @@ const Views = {
                                         <span class="badge badge-success">Active</span>
                                     </div>
                                     <p class="mt-1 text-sm text-muted">Posted on ${new Date(req.createdAt).toLocaleDateString()}</p>
-                                    <button class="btn btn-secondary w-full mt-1" onclick="app.resolveRequest('${req.id}')">Mark as Fulfilled</button>
+                                    
+                                    ${req.responses && req.responses.length > 0 ? `
+                                        <div class="mt-2 p-2" style="background: rgba(255,255,255,0.05); border-radius: 8px;">
+                                            <h5 style="margin-bottom: 0.5rem; color: var(--success); font-size: 0.9rem;"><i data-lucide="check-circle" style="width:14px; display:inline-block; margin-right:4px; vertical-align:middle;"></i> Donors Found:</h5>
+                                            ${req.responses.map(resp => `
+                                                <div class="flex justify-between align-center mb-1 pb-1" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                                    <div>
+                                                        <strong>${resp.donorName}</strong> <span class="badge badge-danger" style="font-size:0.7rem; padding: 0.1rem 0.3rem;">${resp.donorBlood}</span>
+                                                    </div>
+                                                    <a href="tel:${resp.donorPhone}" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Call: ${resp.donorPhone}</a>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : `
+                                        <p class="mt-2 text-sm" style="color: var(--warning);"><i data-lucide="clock" style="width:14px; display:inline-block; margin-right:4px; vertical-align:middle;"></i> Waiting for donors...</p>
+                                    `}
+                                    
+                                    ${req.status !== 'fulfilled' ? `
+                                        <button class="btn btn-secondary w-full mt-2" onclick="app.resolveRequest('${req.id}')">Mark as Fulfilled</button>
+                                    ` : `
+                                        <button class="btn w-full mt-2" disabled style="opacity:0.5; background:var(--success);">Fulfilled</button>
+                                    `}
                                 </div>
                             `).join('')
                         }
@@ -220,7 +241,7 @@ const Views = {
 
                         <div class="form-group stagger-3">
                             <label class="form-label">Hospital / Exact Location</label>
-                            <input type="text" id="req-location" class="form-input" placeholder="City General Hospital, Ward 3" required>
+                            <input type="text" id="req-location" class="form-input" placeholder="AIIMS, New Delhi, Ward 3" required>
                         </div>
 
                         <div class="grid-2">
@@ -246,6 +267,65 @@ const Views = {
                 </div>
             </div>
         `;
+    },
+
+    donate_form: async (reqId) => {
+        const user = Store.getCurrentUser();
+        const request = await Store.getRequestById(reqId);
+        if (!request) return `<p>Request not found.</p>`;
+
+        return `
+            <div class="view stagger-1" style="max-width: 600px; margin: 2rem auto; width: 100%;">
+                <div class="card glass">
+                    <button class="btn btn-secondary mb-2" style="padding: 0.3rem 0.6rem;" onclick="app.navigate('dashboard', event)">
+                        <i data-lucide="arrow-left" style="width:16px;"></i> Back
+                    </button>
+                    <h2 class="mb-1 text-center"><span class="gradient-text">Donor</span> Screening</h2>
+                    <p class="text-center text-muted mb-3">You are offering to donate to <strong>${request.patientName}</strong> (${request.bloodGroup}). Please answer the following truthfully.</p>
+                    
+                    <form onsubmit="app.submitDonationForm(event, '${reqId}')">
+                        <div class="form-group stagger-2">
+                            <label class="form-label">Are you over 18 years old?</label>
+                            <select id="don-age" class="form-select" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group stagger-2">
+                            <label class="form-label">Is your weight above 50 kg?</label>
+                            <select id="don-weight" class="form-select" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group stagger-3">
+                            <label class="form-label">Have you donated blood in the last 3 months?</label>
+                            <select id="don-recent" class="form-select" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group stagger-3">
+                            <label class="form-label">Any recent tattoos, piercings, or major surgeries (last 6 months)?</label>
+                            <select id="don-medical" class="form-select" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group stagger-4 mt-2">
+                            <button type="submit" class="btn btn-primary w-full">
+                                <i data-lucide="heart"></i> Submit & Contact Requester
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
     }
 };
 
@@ -259,13 +339,13 @@ const app = {
         this.navigate('home');
     },
 
-    navigate(route, event) {
+    async navigate(route, event, ...args) {
         if (event) event.preventDefault();
         
         const root = document.getElementById('app');
         if (Views[route]) {
             this.currentRoute = route;
-            root.innerHTML = Views[route]();
+            root.innerHTML = await Views[route](...args);
             if (typeof lucide !== 'undefined') lucide.createIcons(); // re-initialize icons in new html
             this.updateNav();
         }
@@ -281,7 +361,7 @@ const app = {
                 <a class="nav-link ${this.currentRoute === 'dashboard' ? 'active' : ''}" onclick="app.navigate('dashboard', event)">Dashboard</a>
                 <a class="nav-link ${this.currentRoute === 'request' ? 'active' : ''}" onclick="app.navigate('request', event)">Request</a>
                 <span class="nav-link" style="color: var(--text-primary); cursor: default;">
-                    <i data-lucide="user" style="width: 18px; margin-right: 5px; vertical-align:-3px; color: var(--primary);"></i>${user.name.split(' ')[0]}
+                    <i data-lucide="user" style="width: 18px; margin-right: 5px; vertical-align:-3px; color: var(--primary);"></i>${(user.name || 'User').split(' ')[0]}
                 </span>
                 <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; margin-left: 10px;" onclick="Store.logout(); app.toast('Logged out successfully', 'info'); app.navigate('home')">
                     Log out
@@ -334,13 +414,13 @@ const app = {
         document.getElementById('auth-blood-group').value = bg;
     },
 
-    handleAuth(e) {
+    async handleAuth(e) {
         e.preventDefault();
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
 
         if (this.authMode === 'login') {
-            if (Store.login(email, password)) {
+            if (await Store.login(email, password)) {
                 this.toast('Login successful!', 'success');
                 this.navigate('dashboard');
             } else {
@@ -357,22 +437,21 @@ const app = {
                 return;
             }
 
-            if (Store.getUserByEmail(email)) {
+            if (await Store.getUserByEmail(email)) {
                 this.toast('Email already in use.', 'error');
                 return;
             }
 
             const newUser = { name, phone, email, password, location, bloodGroup, canDonate: true };
-            Store.saveUser(newUser);
-            Store.login(email, password); // Auto login
+            await Store.saveUser(newUser);
+            await Store.login(email, password); // Auto login
             
             this.toast('Account created successfully!', 'success');
             this.navigate('dashboard');
         }
     },
 
-    // Request Logic
-    submitRequest(e) {
+    async submitRequest(e) {
         e.preventDefault();
         const user = Store.getCurrentUser();
         
@@ -386,20 +465,42 @@ const app = {
             urgency: document.getElementById('req-urgency').value
         };
 
-        Store.createRequest(reqData);
+        await Store.createRequest(reqData);
         this.toast('Emergency request broadcasted!', 'success');
         this.navigate('dashboard');
     },
 
-    resolveRequest(reqId) {
-        const requests = Store.getRequests();
-        const req = requests.find(r => r.id === reqId);
-        if (req) {
-            req.status = 'fulfilled';
-            localStorage.setItem('requests', JSON.stringify(requests));
-            this.toast('Request marked as fulfilled. Good job!', 'success');
-            this.navigate('dashboard');
+    async submitDonationForm(e, reqId) {
+        e.preventDefault();
+        const age = document.getElementById('don-age').value;
+        const weight = document.getElementById('don-weight').value;
+        const recent = document.getElementById('don-recent').value;
+        const medical = document.getElementById('don-medical').value;
+
+        if (age === 'no' || weight === 'no' || recent === 'yes' || medical === 'yes') {
+            this.toast('Unfortunately, you do not meet the criteria to donate right now.', 'error');
+            return;
         }
+
+        const user = Store.getCurrentUser();
+        const responseData = {
+            donorId: user.id,
+            donorName: user.name,
+            donorPhone: user.phone,
+            donorBlood: user.bloodGroup,
+            submittedAt: new Date().toISOString()
+        };
+
+        await Store.addResponseToRequest(reqId, responseData);
+        
+        this.toast('Donor intent verified and sent to the requester!', 'success');
+        this.navigate('dashboard');
+    },
+
+    async resolveRequest(reqId) {
+        await Store.resolveRequest(reqId);
+        this.toast('Request marked as fulfilled. Good job!', 'success');
+        this.navigate('dashboard');
     },
 
     // Utilities
