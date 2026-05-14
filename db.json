@@ -1,8 +1,8 @@
 {
   "users": [
     {
-      "name": "PRATHYUSH M C",
-      "phone": "7689987907",
+      "name": "Prathyush m",
+      "phone": "9110231525",
       "email": "prathyushmc525@gmail.com",
       "password": "pr@THYUSH2005",
       "location": "shfklsd",
@@ -16,49 +16,38 @@
       "phone": "9972231352",
       "email": "rajathpoojary608@gmail.com",
       "password": "wte",
-      "location": "Cc",
+      "location": "nagasandra",
       "bloodGroup": "AB+",
       "canDonate": true,
       "id": "1778501408187",
       "createdAt": "2026-05-11T12:10:08.187Z"
     },
     {
-      "name": "PRATHYUSH M C",
-      "phone": "+919110231525",
-      "email": "prathyushmc2005@outlook.com",
-      "password": "ujyt",
-      "location": "shfklsd",
-      "bloodGroup": "O+",
-      "canDonate": true,
-      "id": "1778501816881",
-      "createdAt": "2026-05-11T12:16:56.881Z"
-    },
-    {
-      "name": "Rajath",
+      "name": "Dev",
       "phone": "9999999999",
-      "email": "rajath@gmail.com",
+      "email": "dev@gmail.com",
       "password": "cc",
-      "location": "north",
+      "location": "JP nagar",
       "bloodGroup": "AB+",
       "canDonate": true,
       "id": "1778516196221",
       "createdAt": "2026-05-11T16:16:36.221Z"
     },
     {
-      "name": "Dev",
+      "name": "Gopal nag",
       "phone": "9658840865",
-      "email": "prathyushm5@gmail.com",
+      "email": "gopalnag@gmail.com",
       "password": "hrjsdb",
-      "location": "Genda",
+      "location": "kumarswamy layout",
       "bloodGroup": "A+",
       "canDonate": true,
       "id": "1778516313796",
       "createdAt": "2026-05-11T16:18:33.796Z"
     },
     {
-      "name": "Bot",
+      "name": "Sandesh",
       "phone": "123",
-      "email": "bot@test.com",
+      "email": "Sandesh@gmail.com",
       "password": "test",
       "location": "Dorm",
       "bloodGroup": "O+",
@@ -67,9 +56,9 @@
       "createdAt": "2026-05-11T16:29:05.627Z"
     },
     {
-      "name": "DashboardTest",
-      "phone": "999",
-      "email": "dash@test.com",
+      "name": "Rohit kumar",
+      "phone": "9973920132",
+      "email": "rohitkumar@gmail.com",
       "password": "test",
       "location": "Test",
       "bloodGroup": "O-",
@@ -94,7 +83,7 @@
     },
     {
       "requesterId": "1778495044329",
-      "requesterName": "Raghav chad",
+      "requesterName": "Amit chad",
       "patientName": "Fjvv",
       "bloodGroup": "O+",
       "hospital": "Dygvg",

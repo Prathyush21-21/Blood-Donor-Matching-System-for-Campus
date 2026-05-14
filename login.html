@@ -36,8 +36,17 @@
                     <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; border-bottom: 2px solid var(--primary);" onclick="loginApp.toggleAuthMode('login')" id="tab-login">Login</button>
                     <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; color: var(--text-secondary);" onclick="loginApp.toggleAuthMode('register')" id="tab-register">Register</button>
                 </div>
-                
+
                 <form id="auth-form" onsubmit="loginApp.handleAuth(event)">
+                    <div id="role-section" style="display: none;">
+                        <div class="form-group mb-3">
+                            <label class="form-label" style="margin-bottom: 0.5rem; display: block; color: var(--text-secondary);">Continue as</label>
+                            <div class="auth-tabs flex justify-between" style="border-bottom: 1px solid var(--border-color);">
+                                <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; border-bottom: 2px solid var(--primary);" onclick="loginApp.toggleUserType('donor')" type="button" id="tab-donor">Donor</button>
+                                <button class="btn btn-secondary w-full" style="border: none; border-radius: 0; color: var(--text-secondary);" onclick="loginApp.toggleUserType('recipient')" type="button" id="tab-recipient">Recipient</button>
+                            </div>
+                        </div>
+                    </div>
                     <div id="register-fields" style="display: none;">
                         <div class="form-group slide-up">
                             <label class="form-label">Full Name</label>
@@ -51,7 +60,7 @@
                             <label class="form-label">Campus Location / Dorm</label>
                             <input type="text" id="auth-location" class="form-input" placeholder="Kaveri Hostel, Block A">
                         </div>
-                        <div class="form-group slide-up">
+                        <div class="form-group slide-up" id="blood-group-field">
                             <label class="form-label">Blood Group</label>
                             <input type="hidden" id="auth-blood-group" value="">
                             <div class="blood-group-selector">
